@@ -1,12 +1,11 @@
 ﻿"""
-Esquemas Pydantic para las reservas deportivas.
+Esquemas Pydantic de reservas.
 
-Las validaciones estructurales se realizan aquí.
-La disponibilidad y la superposición se comprobarán posteriormente
-en ReservationService, consultando PostgreSQL.
+Estos esquemas validan los datos recibidos desde Flutter o Swagger
+antes de ejecutar las reglas de negocio y consultar PostgreSQL.
 """
 
-from datetime import datetime, timezone
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -14,67 +13,75 @@ from app.models.enums import ReservationStatus
 
 
 class ReservationCreate(BaseModel):
-    """Información necesaria para solicitar una reserva."""
+    """Datos necesarios para solicitar una reserva."""
 
     sports_space_id: int = Field(
         gt=0,
-        description="Identificador del espacio que será reservado.",
+        description="Identificador del espacio deportivo.",
     )
-    start_datetime: datetime
-    end_datetime: datetime
+
+    start_datetime: datetime = Field(
+        description=(
+            "Fecha y hora de inicio. Debe incluir zona horaria, "
+            "por ejemplo 2026-11-10T18:00:00-03:00."
+        ),
+    )
+
+    end_datetime: datetime = Field(
+        description=(
+            "Fecha y hora de finalización. Debe incluir zona horaria."
+        ),
+    )
 
     @model_validator(mode="after")
     def validate_reservation_dates(self):
-        """Comprueba las reglas básicas de fecha, horario y duración."""
+        """Valida formato, duración y orden del intervalo."""
 
-        # La hora final siempre debe ser posterior a la inicial.
-        if self.end_datetime <= self.start_datetime:
-            raise ValueError(
-                "La fecha y hora de finalizacion deben ser posteriores al inicio."
-            )
-
-        # El trabajo práctico exige que los horarios comiencen
-        # y terminen exactamente en minuto 00.
+        # Exige zona horaria para evitar diferencias entre Flutter,
+        # FastAPI, PostgreSQL y el servidor de Render.
         if (
-            self.start_datetime.minute != 0
-            or self.end_datetime.minute != 0
-            or self.start_datetime.second != 0
-            or self.end_datetime.second != 0
-            or self.start_datetime.microsecond != 0
-            or self.end_datetime.microsecond != 0
+            self.start_datetime.tzinfo is None
+            or self.end_datetime.tzinfo is None
         ):
             raise ValueError(
-                "La reserva debe comenzar y terminar en una hora exacta."
+                "Las fechas deben incluir zona horaria, por ejemplo -03:00."
             )
 
-        # Calcula la duración total del intervalo.
+        # La finalización debe ocurrir después del inicio.
+        if self.end_datetime <= self.start_datetime:
+            raise ValueError(
+                "La fecha de finalización debe ser posterior al inicio."
+            )
+
+        # El TP exige comenzar y finalizar en minuto 00.
+        date_values = (
+            self.start_datetime,
+            self.end_datetime,
+        )
+
+        for date_value in date_values:
+            if (
+                date_value.minute != 0
+                or date_value.second != 0
+                or date_value.microsecond != 0
+            ):
+                raise ValueError(
+                    "La reserva debe comenzar y terminar en una hora exacta."
+                )
+
         duration = self.end_datetime - self.start_datetime
 
-        # La duración mínima permitida es de una hora.
+        # La duración mínima obligatoria es de 60 minutos.
         if duration.total_seconds() < 3600:
             raise ValueError(
-                "La reserva debe tener una duracion minima de una hora."
-            )
-
-        # Comprueba que la reserva sea futura.
-        # Si la fecha tiene zona horaria, utiliza UTC.
-        if self.start_datetime.tzinfo is not None:
-            current_time = datetime.now(timezone.utc)
-            comparable_start = self.start_datetime.astimezone(timezone.utc)
-        else:
-            current_time = datetime.now()
-            comparable_start = self.start_datetime
-
-        if comparable_start <= current_time:
-            raise ValueError(
-                "La reserva debe comenzar en una fecha y hora futuras."
+                "La reserva debe durar al menos una hora."
             )
 
         return self
 
 
 class ReservationRead(BaseModel):
-    """Información completa de una reserva devuelta por la API."""
+    """Información de una reserva devuelta por la API."""
 
     id: int
     user_id: int
@@ -88,12 +95,18 @@ class ReservationRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ReservationCancel(BaseModel):
-    """
-    Respuesta que puede utilizarse al cancelar una reserva.
+class AvailabilitySlot(BaseModel):
+    """Representa un intervalo de una hora disponible."""
 
-    La identificación del usuario se obtendrá desde Firebase,
-    no desde el cuerpo de la petición.
-    """
+    start_datetime: datetime
+    end_datetime: datetime
 
-    reservation_id: int = Field(gt=0)
+
+class SpaceAvailabilityRead(BaseModel):
+    """Disponibilidad completa de un espacio para una fecha."""
+
+    sports_space_id: int
+    requested_date: date
+    opening_time: str
+    closing_time: str
+    available_slots: list[AvailabilitySlot]

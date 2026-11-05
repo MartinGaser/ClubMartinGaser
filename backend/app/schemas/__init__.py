@@ -1,14 +1,11 @@
-﻿"""
-Registro central de esquemas Pydantic.
-
-Permite importar los esquemas desde app.schemas.
-"""
+﻿"""Registro central de esquemas Pydantic."""
 
 from app.schemas.device_token import DeviceTokenCreate, DeviceTokenRead
 from app.schemas.reservation import (
-    ReservationCancel,
+    AvailabilitySlot,
     ReservationCreate,
     ReservationRead,
+    SpaceAvailabilityRead,
 )
 from app.schemas.sports_space import (
     SportsSpaceCreate,
@@ -31,7 +28,8 @@ __all__ = [
     "SportsSpaceRead",
     "ReservationCreate",
     "ReservationRead",
-    "ReservationCancel",
+    "AvailabilitySlot",
+    "SpaceAvailabilityRead",
     "DeviceTokenCreate",
     "DeviceTokenRead",
 ]

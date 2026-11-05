@@ -4,6 +4,10 @@ Endpoints de espacios deportivos.
 Permiten listar, consultar, crear, modificar y dar de baja
 espacios vinculados con una sede.
 """
+from datetime import date
+
+from app.schemas.reservation import SpaceAvailabilityRead
+from app.services.reservation_service import ReservationService
 
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
@@ -119,11 +123,45 @@ def delete_space(
     space_id: int,
     db: Session = Depends(get_db),
 ):
-    """Realiza una baja lógica del espacio."""
+    """
+    Realiza una baja lógica del espacio.
 
+    El espacio permanece en PostgreSQL para conservar
+    el historial de reservas.
+    """
+
+    # Llama al servicio encargado de validar y dar de baja el espacio.
     SportsSpaceService.delete_space(
         db=db,
         space_id=space_id,
     )
 
+    # Un DELETE correcto devuelve 204 sin contenido.
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    "/{space_id}/availability",
+    response_model=SpaceAvailabilityRead,
+    summary="Consultar disponibilidad de un espacio",
+)
+def get_space_availability(
+    space_id: int,
+    requested_date: date = Query(
+        description="Fecha consultada en formato YYYY-MM-DD.",
+    ),
+    db: Session = Depends(get_db),
+):
+    """
+    Calcula intervalos disponibles de una hora.
+
+    No devuelve horarios ocupados ni horarios que ya pasaron.
+    """
+
+    # El servicio consulta el horario de la sede y las reservas
+    # confirmadas para calcular los turnos disponibles.
+    return ReservationService.get_availability(
+        db=db,
+        sports_space_id=space_id,
+        requested_date=requested_date,
+    )
