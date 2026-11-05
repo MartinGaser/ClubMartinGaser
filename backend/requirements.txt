@@ -1,0 +1,11 @@
+﻿fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg[binary]
+alembic
+pydantic-settings
+firebase-admin
+email-validator
+httpx
+pytest
+pytest-cov

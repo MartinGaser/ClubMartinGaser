@@ -1,0 +1,41 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Entorno virtual
+backend/.venv/
+.venv/
+
+# Variables y credenciales
+.env
+backend/.env
+firebase-service-account.json
+*.pem
+*.key
+
+# Flutter
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+
+# Android
+mobile/android/.gradle/
+mobile/android/local.properties
+*.jks
+*.keystore
+
+# Editores
+.vscode/
+.idea/
+*.iml
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
