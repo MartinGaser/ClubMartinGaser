@@ -1,17 +1,129 @@
-﻿"""Endpoints de los espacios deportivos."""
+﻿"""
+Endpoints de espacios deportivos.
 
-from fastapi import APIRouter
+Permiten listar, consultar, crear, modificar y dar de baja
+espacios vinculados con una sede.
+"""
+
+from fastapi import APIRouter, Depends, Query, Response, status
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
+from app.models.enums import SportType
+from app.schemas.sports_space import (
+    SportsSpaceCreate,
+    SportsSpaceRead,
+    SportsSpaceUpdate,
+)
+from app.services.space_service import SportsSpaceService
 
 
 router = APIRouter()
 
 
-@router.get("")
-def list_sports_spaces() -> list[dict[str, str]]:
-    """
-    Devuelve provisoriamente una lista vacía.
+@router.get(
+    "",
+    response_model=list[SportsSpaceRead],
+    summary="Listar espacios deportivos",
+)
+def list_spaces(
+    venue_id: int | None = Query(
+        default=None,
+        gt=0,
+        description="Filtra los espacios por sede.",
+    ),
+    sport_type: SportType | None = Query(
+        default=None,
+        description="Filtra los espacios por deporte.",
+    ),
+    active_only: bool = Query(
+        default=True,
+        description="Indica si solo se muestran espacios activos.",
+    ),
+    db: Session = Depends(get_db),
+):
+    """Lista los espacios y aplica los filtros recibidos."""
 
-    Después permitirá filtrar los espacios por sede y deporte.
+    return SportsSpaceService.list_spaces(
+        db=db,
+        venue_id=venue_id,
+        sport_type=sport_type,
+        active_only=active_only,
+    )
+
+
+@router.get(
+    "/{space_id}",
+    response_model=SportsSpaceRead,
+    summary="Consultar un espacio deportivo",
+)
+def get_space(
+    space_id: int,
+    db: Session = Depends(get_db),
+):
+    """Obtiene un espacio mediante su identificador."""
+
+    return SportsSpaceService.get_space(
+        db=db,
+        space_id=space_id,
+    )
+
+
+@router.post(
+    "",
+    response_model=SportsSpaceRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Crear un espacio deportivo",
+)
+def create_space(
+    space_data: SportsSpaceCreate,
+    db: Session = Depends(get_db),
+):
+    """
+    Crea un espacio dentro de una sede activa.
+
+    Más adelante este endpoint requerirá permisos administrativos.
     """
 
-    return []
+    return SportsSpaceService.create_space(
+        db=db,
+        space_data=space_data,
+    )
+
+
+@router.patch(
+    "/{space_id}",
+    response_model=SportsSpaceRead,
+    summary="Actualizar un espacio deportivo",
+)
+def update_space(
+    space_id: int,
+    space_data: SportsSpaceUpdate,
+    db: Session = Depends(get_db),
+):
+    """Modifica únicamente los campos enviados."""
+
+    return SportsSpaceService.update_space(
+        db=db,
+        space_id=space_id,
+        space_data=space_data,
+    )
+
+
+@router.delete(
+    "/{space_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Dar de baja un espacio deportivo",
+)
+def delete_space(
+    space_id: int,
+    db: Session = Depends(get_db),
+):
+    """Realiza una baja lógica del espacio."""
+
+    SportsSpaceService.delete_space(
+        db=db,
+        space_id=space_id,
+    )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
