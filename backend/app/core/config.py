@@ -1,26 +1,32 @@
 ﻿"""
 Configuración general del backend.
 
-La información sensible se obtiene desde variables de entorno
-y no se escribe directamente en el código.
+Los valores sensibles se obtienen desde el archivo .env
+o desde variables de entorno configuradas en Render.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Contiene la configuración utilizada por la aplicación."""
+    """Contiene la configuración utilizada por FastAPI."""
 
     APP_NAME: str = "ClubMartinGaser"
     API_PREFIX: str = "/api"
 
-    # Dirección de la base de datos PostgreSQL.
+    # Conexión con PostgreSQL.
     DATABASE_URL: str = (
-        "postgresql://postgres:postgres@localhost:5432/club_martin_gaser"
+        "postgresql://postgres:postgres@127.0.0.1:5432/"
+        "club_martin_gaser"
     )
 
-    # Identificador del proyecto creado en Firebase.
+    # Identificador del proyecto Firebase.
     FIREBASE_PROJECT_ID: str = ""
+
+    # Ruta relativa o absoluta de la cuenta de servicio.
+    FIREBASE_CREDENTIALS_PATH: str = (
+        "firebase-service-account.json"
+    )
 
     # Lee automáticamente las variables almacenadas en .env.
     model_config = SettingsConfigDict(
@@ -30,5 +36,5 @@ class Settings(BaseSettings):
     )
 
 
-# Esta instancia se reutiliza en toda la aplicación.
+# Instancia compartida por toda la aplicación.
 settings = Settings()

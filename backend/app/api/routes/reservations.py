@@ -1,15 +1,18 @@
 ﻿"""
-Endpoints de reservas.
+Endpoints de reservas del usuario autenticado.
 
-El parámetro user_id es temporal.
-Cuando integremos Firebase, el usuario se obtendrá automáticamente
-desde el token de autenticación.
+La identidad se obtiene exclusivamente desde el token de Firebase.
+El cliente no puede elegir manualmente otro user_id.
 """
 
-from fastapi import APIRouter, Depends, Query
+from typing import Annotated
+
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.dependencies.auth import get_current_user
+from app.models.user import User
 from app.schemas.reservation import ReservationCreate, ReservationRead
 from app.services.reservation_service import ReservationService
 
@@ -25,20 +28,24 @@ router = APIRouter()
 )
 def create_reservation(
     reservation_data: ReservationCreate,
-    user_id: int = Query(
-        gt=0,
-        description=(
-            "Usuario temporal para pruebas. "
-            "Luego se obtendrá desde Firebase."
-        ),
-    ),
-    db: Session = Depends(get_db),
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    db: Annotated[
+        Session,
+        Depends(get_db),
+    ],
 ):
-    """Crea una reserva si el horario se encuentra disponible."""
+    """
+    Crea una reserva para el usuario autenticado.
+
+    El identificador se obtiene del token Firebase validado.
+    """
 
     return ReservationService.create_reservation(
         db=db,
-        user_id=user_id,
+        user_id=current_user.id,
         reservation_data=reservation_data,
     )
 
@@ -46,34 +53,46 @@ def create_reservation(
 @router.get(
     "/me",
     response_model=list[ReservationRead],
-    summary="Listar reservas futuras",
+    summary="Listar mis reservas futuras",
 )
 def list_future_reservations(
-    user_id: int = Query(gt=0),
-    db: Session = Depends(get_db),
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    db: Annotated[
+        Session,
+        Depends(get_db),
+    ],
 ):
-    """Devuelve reservas futuras y confirmadas del usuario."""
+    """Devuelve las reservas futuras del usuario autenticado."""
 
     return ReservationService.list_future_reservations(
         db=db,
-        user_id=user_id,
+        user_id=current_user.id,
     )
 
 
 @router.get(
     "/me/history",
     response_model=list[ReservationRead],
-    summary="Consultar historial de reservas",
+    summary="Consultar mi historial de reservas",
 )
 def list_reservation_history(
-    user_id: int = Query(gt=0),
-    db: Session = Depends(get_db),
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    db: Annotated[
+        Session,
+        Depends(get_db),
+    ],
 ):
-    """Devuelve reservas canceladas o finalizadas."""
+    """Devuelve las reservas canceladas o finalizadas."""
 
     return ReservationService.list_history(
         db=db,
-        user_id=user_id,
+        user_id=current_user.id,
     )
 
 
@@ -84,14 +103,25 @@ def list_reservation_history(
 )
 def get_reservation(
     reservation_id: int,
-    user_id: int = Query(gt=0),
-    db: Session = Depends(get_db),
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    db: Annotated[
+        Session,
+        Depends(get_db),
+    ],
 ):
-    """Devuelve una reserva perteneciente al usuario."""
+    """
+    Devuelve una reserva si pertenece al usuario autenticado.
+
+    ReservationService devuelve 404 si la reserva pertenece
+    a otra persona, evitando revelar información privada.
+    """
 
     return ReservationService.get_reservation(
         db=db,
-        user_id=user_id,
+        user_id=current_user.id,
         reservation_id=reservation_id,
     )
 
@@ -103,13 +133,19 @@ def get_reservation(
 )
 def cancel_reservation(
     reservation_id: int,
-    user_id: int = Query(gt=0),
-    db: Session = Depends(get_db),
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    db: Annotated[
+        Session,
+        Depends(get_db),
+    ],
 ):
-    """Cancela la reserva y libera el horario."""
+    """Cancela una reserva futura del usuario autenticado."""
 
     return ReservationService.cancel_reservation(
         db=db,
-        user_id=user_id,
+        user_id=current_user.id,
         reservation_id=reservation_id,
     )

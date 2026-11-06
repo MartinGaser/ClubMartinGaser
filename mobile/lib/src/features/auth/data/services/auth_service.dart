@@ -61,6 +61,6 @@ class AuthService {
     }
 
     // Espera a que Firebase genere o recupere el ID token.
-    return await user.getIdToken();
+    return await user.getIdToken(true);
   }
 }
