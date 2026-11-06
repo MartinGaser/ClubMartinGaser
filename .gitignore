@@ -39,3 +39,5 @@ Desktop.ini
 
 # Logs
 *.log
+
+mobile/android/app/google-services.json
