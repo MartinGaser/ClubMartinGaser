@@ -2,10 +2,12 @@
 
 from app.repositories.reservation_repository import ReservationRepository
 from app.repositories.space_repository import SportsSpaceRepository
+from app.repositories.user_repository import UserRepository
 from app.repositories.venue_repository import VenueRepository
 
 
 __all__ = [
+    "UserRepository",
     "VenueRepository",
     "SportsSpaceRepository",
     "ReservationRepository",
