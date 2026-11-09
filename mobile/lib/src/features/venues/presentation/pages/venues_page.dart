@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../spaces/presentation/pages/spaces_page.dart';
 import '../../../../core/errors/api_exception.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../auth/data/services/auth_service.dart';
@@ -32,7 +33,7 @@ class _VenuesPageState extends State<VenuesPage> {
     // Crea el cliente HTTP y el repositorio de sedes.
     _apiClient = ApiClient(authService: widget.authService);
 
-    _venueRepository = VenueRepository(apiClient: _apiClient);
+    _venueRepository = VenueRepository(_apiClient);
 
     _loadVenues();
   }
@@ -87,11 +88,15 @@ class _VenuesPageState extends State<VenuesPage> {
 
   /// Por ahora informa la sede elegida.
   ///
-  /// En el siguiente paso abrirá los espacios deportivos.
+  /// En el siguiente paso abrirÃƒÂ¡ los espacios deportivos.
+  /// Abre los espacios deportivos de la sede seleccionada.
   void _selectVenue(Venue venue) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Sede seleccionada: ${venue.name}')));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            SpacesPage(authService: widget.authService, venue: venue),
+      ),
+    );
   }
 
   @override
@@ -145,11 +150,11 @@ class _VenuesPageState extends State<VenuesPage> {
       padding: const EdgeInsets.all(16),
       children: [
         Text(
-          'Elegí una sede',
+          'ElegÃƒÂ­ una sede',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 6),
-        const Text('Consultá los espacios y horarios disponibles.'),
+        const Text('ConsultÃƒÂ¡ los espacios y horarios disponibles.'),
         const SizedBox(height: 20),
         for (final venue in _venues)
           VenueCard(

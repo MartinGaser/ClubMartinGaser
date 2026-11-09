@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_initializing_formals
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -9,9 +11,12 @@ import '../errors/api_exception.dart';
 
 /// Cliente HTTP central de ClubMartinGaser.
 ///
-/// Todas las solicitudes autenticadas obtienen un ID token
-/// actualizado de Firebase y lo envían a FastAPI.
+/// Obtiene el token actualizado de Firebase y lo envía
+/// automáticamente a FastAPI en cada petición autenticada.
 class ApiClient {
+  // Se utiliza un parámetro nombrado para que la creación
+  // del cliente resulte más clara en las pantallas.
+
   ApiClient({required AuthService authService, http.Client? httpClient})
     : _authService = authService,
       _httpClient = httpClient ?? http.Client();
@@ -19,15 +24,16 @@ class ApiClient {
   final AuthService _authService;
   final http.Client _httpClient;
 
-  /// Construye una URL completa de FastAPI.
+  /// Construye una dirección completa hacia FastAPI.
   Uri _buildUri(String path, [Map<String, String>? queryParameters]) {
     return Uri.parse('${ApiConfig.baseUrl}$path')
         .replace(queryParameters: queryParameters);
   }
 
-  /// Construye los encabezados comunes.
+  /// Construye los encabezados utilizados por la API.
   ///
-  /// Si authenticated es verdadero, agrega un token Firebase.
+  /// Cuando la petición es autenticada, obtiene un ID token
+  /// actualizado de Firebase y lo envía como Bearer token.
   Future<Map<String, String>> _buildHeaders({bool authenticated = true}) async {
     final headers = <String, String>{
       'Accept': 'application/json',
@@ -42,12 +48,15 @@ class ApiClient {
 
     if (token == null || token.isEmpty) {
       throw const ApiException(
-        message: 'La sesión no es válida. Iniciá sesión nuevamente.',
+        message:
+            ('La sesión no es válida. '
+            'Iniciá sesión nuevamente.'),
         statusCode: 401,
       );
     }
 
-    // FastAPI espera exactamente: Authorization: Bearer TOKEN.
+    // FastAPI espera exactamente:
+    // Authorization: Bearer TOKEN
     headers['Authorization'] = 'Bearer $token';
 
     return headers;
@@ -112,13 +121,17 @@ class ApiClient {
     }
   }
 
-  /// Ejecuta una petición PUT.
-  Future<dynamic> put(String path, {Map<String, dynamic>? body}) async {
+  /// Ejecuta una petición PUT con un cuerpo JSON.
+  Future<dynamic> put(
+    String path, {
+    Map<String, dynamic>? body,
+    bool authenticated = true,
+  }) async {
     try {
       final response = await _httpClient
           .put(
             _buildUri(path),
-            headers: await _buildHeaders(),
+            headers: await _buildHeaders(authenticated: authenticated),
             body: jsonEncode(body ?? <String, dynamic>{}),
           )
           .timeout(ApiConfig.timeout);
@@ -138,13 +151,17 @@ class ApiClient {
     }
   }
 
-  /// Ejecuta una petición PATCH.
-  Future<dynamic> patch(String path, {Map<String, dynamic>? body}) async {
+  /// Ejecuta una petición PATCH con un cuerpo JSON.
+  Future<dynamic> patch(
+    String path, {
+    Map<String, dynamic>? body,
+    bool authenticated = true,
+  }) async {
     try {
       final response = await _httpClient
           .patch(
             _buildUri(path),
-            headers: await _buildHeaders(),
+            headers: await _buildHeaders(authenticated: authenticated),
             body: jsonEncode(body ?? <String, dynamic>{}),
           )
           .timeout(ApiConfig.timeout);
@@ -165,10 +182,13 @@ class ApiClient {
   }
 
   /// Ejecuta una petición DELETE.
-  Future<dynamic> delete(String path) async {
+  Future<dynamic> delete(String path, {bool authenticated = true}) async {
     try {
       final response = await _httpClient
-          .delete(_buildUri(path), headers: await _buildHeaders())
+          .delete(
+            _buildUri(path),
+            headers: await _buildHeaders(authenticated: authenticated),
+          )
           .timeout(ApiConfig.timeout);
 
       return _processResponse(response);
@@ -186,19 +206,19 @@ class ApiClient {
     }
   }
 
-  /// Interpreta el código HTTP y el cuerpo recibido.
+  /// Procesa el código HTTP y decodifica el cuerpo recibido.
   dynamic _processResponse(http.Response response) {
     dynamic data;
 
-    if (response.body.isNotEmpty) {
+    if (response.bodyBytes.isNotEmpty) {
       try {
         data = jsonDecode(utf8.decode(response.bodyBytes));
       } catch (_) {
-        data = response.body;
+        data = utf8.decode(response.bodyBytes);
       }
     }
 
-    // Cualquier respuesta entre 200 y 299 es exitosa.
+    // Los códigos entre 200 y 299 representan éxito.
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return data;
     }
@@ -212,7 +232,7 @@ class ApiClient {
     );
   }
 
-  /// Extrae el campo detail utilizado por FastAPI.
+  /// Extrae el mensaje enviado por FastAPI en el campo detail.
   String? _extractErrorMessage(dynamic data) {
     if (data is! Map<String, dynamic>) {
       return null;
@@ -224,7 +244,7 @@ class ApiClient {
       return detail;
     }
 
-    // Los errores de validación 422 suelen devolver una lista.
+    // Los errores 422 de Pydantic suelen contener una lista.
     if (detail is List && detail.isNotEmpty) {
       final firstError = detail.first;
 
@@ -240,7 +260,7 @@ class ApiClient {
     return null;
   }
 
-  /// Genera un mensaje predeterminado según el código HTTP.
+  /// Proporciona un mensaje para cada código HTTP frecuente.
   String _defaultMessageForStatus(int statusCode) {
     switch (statusCode) {
       case 400:
@@ -256,7 +276,8 @@ class ApiClient {
         return 'El recurso solicitado no existe.';
 
       case 409:
-        return 'La operación entra en conflicto con datos existentes.';
+        return ('La operación entra en conflicto '
+            'con datos existentes.');
 
       case 422:
         return 'Revisá los datos ingresados.';
@@ -269,7 +290,7 @@ class ApiClient {
     }
   }
 
-  /// Cierra el cliente cuando deja de utilizarse.
+  /// Libera los recursos del cliente HTTP.
   void close() {
     _httpClient.close();
   }

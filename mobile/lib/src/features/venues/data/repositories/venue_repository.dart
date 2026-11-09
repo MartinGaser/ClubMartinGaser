@@ -4,24 +4,23 @@ import '../models/venue.dart';
 
 /// Repositorio encargado de obtener sedes desde FastAPI.
 class VenueRepository {
-  const VenueRepository({required ApiClient apiClient})
-    : _apiClient = apiClient;
+  const VenueRepository(this._apiClient);
 
   final ApiClient _apiClient;
 
-  /// Obtiene únicamente las sedes activas.
+  /// Obtiene Ãºnicamente las sedes activas.
   Future<List<Venue>> getActiveVenues() async {
     final result = await _apiClient.get(
       '/api/venues',
       queryParameters: const {'active_only': 'true'},
 
-      // El listado de sedes es público en el backend actual.
+      // El listado de sedes es pÃºblico en el backend actual.
       authenticated: false,
     );
 
     if (result is! List) {
       throw const ApiException(
-        message: 'El servidor devolvió una lista de sedes inválida.',
+        message: 'El servidor devolviÃ³ una lista de sedes invÃ¡lida.',
       );
     }
 
@@ -39,7 +38,7 @@ class VenueRepository {
 
     if (result is! Map<String, dynamic>) {
       throw const ApiException(
-        message: 'El servidor devolvió una sede inválida.',
+        message: 'El servidor devolviÃ³ una sede invÃ¡lida.',
       );
     }
 
