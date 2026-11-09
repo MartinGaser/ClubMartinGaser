@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// Convierte los códigos técnicos de Firebase en mensajes visibles.
+/// Convierte los cÃ³digos tÃ©cnicos de Firebase en mensajes visibles.
 String firebaseAuthErrorMessage(Object error) {
   if (error is! FirebaseAuthException) {
     return 'Ocurrio un error inesperado. Intente nuevamente.';
@@ -18,13 +18,13 @@ String firebaseAuthErrorMessage(Object error) {
 
     case 'wrong-password':
     case 'invalid-credential':
-      return 'El correo o la contraseña son incorrectos.';
+      return 'El correo o la contraseÃ±a son incorrectos.';
 
     case 'email-already-in-use':
       return 'El correo electronico ya se encuentra registrado.';
 
     case 'weak-password':
-      return 'La contraseña debe tener al menos 6 caracteres.';
+      return 'La contraseÃ±a debe tener al menos 6 caracteres.';
 
     case 'too-many-requests':
       return 'Se realizaron demasiados intentos. Intente mas tarde.';

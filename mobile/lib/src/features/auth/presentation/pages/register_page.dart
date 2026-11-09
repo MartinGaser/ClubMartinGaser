@@ -44,7 +44,7 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      // Firebase registra al usuario y deja iniciada la sesión.
+      // Firebase registra al usuario y deja iniciada la sesiÃ³n.
       await widget.authService.register(
         email: _emailController.text,
         password: _passwordController.text,
@@ -55,7 +55,7 @@ class _RegisterPageState extends State<RegisterPage> {
       }
 
       // Regresa a la pantalla anterior.
-      // AuthGate detectará la nueva sesión.
+      // AuthGate detectarÃ¡ la nueva sesiÃ³n.
       Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) {
@@ -94,13 +94,13 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 24),
 
-                // Correo electrónico.
+                // Correo electrÃ³nico.
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   autocorrect: false,
                   decoration: const InputDecoration(
-                    labelText: 'Correo electrónico',
+                    labelText: 'Correo electrÃ³nico',
                     prefixIcon: Icon(Icons.email_outlined),
                     border: OutlineInputBorder(),
                   ),
@@ -108,11 +108,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     final email = value?.trim() ?? '';
 
                     if (email.isEmpty) {
-                      return 'Ingresá tu correo electrónico.';
+                      return 'IngresÃ¡ tu correo electrÃ³nico.';
                     }
 
                     if (!email.contains('@')) {
-                      return 'Ingresá un correo válido.';
+                      return 'IngresÃ¡ un correo vÃ¡lido.';
                     }
 
                     return null;
@@ -120,12 +120,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Contraseña.
+                // ContraseÃ±a.
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Contraseña',
+                    labelText: 'ContraseÃ±a',
                     prefixIcon: const Icon(Icons.lock_outline),
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
@@ -151,12 +151,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Confirmación de contraseña.
+                // ConfirmaciÃ³n de contraseÃ±a.
                 TextFormField(
                   controller: _confirmationController,
                   obscureText: _obscureConfirmation,
                   decoration: InputDecoration(
-                    labelText: 'Repetir contraseña',
+                    labelText: 'Repetir contraseÃ±a',
                     prefixIcon: const Icon(Icons.lock_reset),
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
@@ -174,11 +174,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Repetí la contraseña.';
+                      return 'RepetÃ­ la contraseÃ±a.';
                     }
 
                     if (value != _passwordController.text) {
-                      return 'Las contraseñas no coinciden.';
+                      return 'Las contraseÃ±as no coinciden.';
                     }
 
                     return null;
@@ -186,7 +186,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 24),
 
-                // Botón de registro.
+                // BotÃ³n de registro.
                 FilledButton(
                   onPressed: _isLoading ? null : _register,
                   child: Padding(

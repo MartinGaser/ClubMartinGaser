@@ -3,22 +3,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 /// Servicio encargado de comunicarse con Firebase Authentication.
 ///
 /// Las pantallas no acceden directamente a Firebase. En su lugar,
-/// utilizan esta clase para registrar, iniciar o cerrar sesión.
+/// utilizan esta clase para registrar, iniciar o cerrar sesiÃ³n.
 class AuthService {
   AuthService({FirebaseAuth? firebaseAuth})
     : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
 
   final FirebaseAuth _firebaseAuth;
 
-  /// Devuelve el usuario que tiene una sesión activa.
+  /// Devuelve el usuario que tiene una sesiÃ³n activa.
   User? get currentUser => _firebaseAuth.currentUser;
 
-  /// Informa los cambios de autenticación.
+  /// Informa los cambios de autenticaciÃ³n.
   ///
-  /// Emite un usuario cuando se inicia sesión y null cuando se cierra.
+  /// Emite un usuario cuando se inicia sesiÃ³n y null cuando se cierra.
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
-  /// Registra una cuenta mediante correo electrónico y contraseña.
+  /// Registra una cuenta mediante correo electrÃ³nico y contraseÃ±a.
   Future<UserCredential> register({
     required String email,
     required String password,
@@ -29,7 +29,7 @@ class AuthService {
     );
   }
 
-  /// Inicia sesión con una cuenta existente.
+  /// Inicia sesiÃ³n con una cuenta existente.
   Future<UserCredential> signIn({
     required String email,
     required String password,
@@ -40,12 +40,12 @@ class AuthService {
     );
   }
 
-  /// Envía un correo para restablecer la contraseña.
+  /// EnvÃ­a un correo para restablecer la contraseÃ±a.
   Future<void> sendPasswordResetEmail({required String email}) {
     return _firebaseAuth.sendPasswordResetEmail(email: email.trim());
   }
 
-  /// Cierra la sesión activa.
+  /// Cierra la sesiÃ³n activa.
   Future<void> signOut() {
     return _firebaseAuth.signOut();
   }
@@ -55,7 +55,7 @@ class AuthService {
     // Guarda el usuario autenticado actualmente.
     final user = _firebaseAuth.currentUser;
 
-    // Si no existe una sesión, no hay token para enviar.
+    // Si no existe una sesiÃ³n, no hay token para enviar.
     if (user == null) {
       return null;
     }

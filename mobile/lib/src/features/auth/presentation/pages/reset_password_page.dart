@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/services/auth_service.dart';
 import '../widgets/auth_error_message.dart';
 
-/// Pantalla para solicitar la recuperación de contraseña.
+/// Pantalla para solicitar la recuperaciÃ³n de contraseÃ±a.
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key, required this.authService});
 
@@ -24,13 +24,15 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     super.dispose();
   }
 
-  /// Solicita a Firebase el envío del correo de recuperación.
+  /// Solicita a Firebase el envÃ­o del correo de recuperaciÃ³n.
   Future<void> _sendEmail() async {
     final email = _emailController.text.trim();
 
     if (email.isEmpty || !email.contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresá un correo electrónico válido.')),
+        const SnackBar(
+          content: Text('IngresÃ¡ un correo electrÃ³nico vÃ¡lido.'),
+        ),
       );
       return;
     }
@@ -47,10 +49,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Se envió el correo de recuperación.')),
+        const SnackBar(content: Text('Se enviÃ³ el correo de recuperaciÃ³n.')),
       );
 
-      // Regresa al inicio de sesión.
+      // Regresa al inicio de sesiÃ³n.
       Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) {
@@ -72,7 +74,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Recuperar contraseña')),
+      appBar: AppBar(title: const Text('Recuperar contraseÃ±a')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -82,8 +84,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               const Icon(Icons.lock_reset, size: 64),
               const SizedBox(height: 16),
               const Text(
-                'Ingresá tu correo y Firebase enviará un enlace '
-                'para cambiar tu contraseña.',
+                'IngresÃ¡ tu correo y Firebase enviarÃ¡ un enlace '
+                'para cambiar tu contraseÃ±a.',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -94,14 +96,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 keyboardType: TextInputType.emailAddress,
                 autocorrect: false,
                 decoration: const InputDecoration(
-                  labelText: 'Correo electrónico',
+                  labelText: 'Correo electrÃ³nico',
                   prefixIcon: Icon(Icons.email_outlined),
                   border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Solicita el correo de recuperación.
+              // Solicita el correo de recuperaciÃ³n.
               FilledButton(
                 onPressed: _isLoading ? null : _sendEmail,
                 child: Padding(

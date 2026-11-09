@@ -5,7 +5,7 @@ import '../../../home/presentation/pages/home_page.dart';
 import '../../data/services/auth_service.dart';
 import 'login_page.dart';
 
-/// Decide qué pantalla mostrar según la sesión de Firebase.
+/// Decide quÃ© pantalla mostrar segÃºn la sesiÃ³n de Firebase.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key, required this.authService});
 
@@ -14,10 +14,10 @@ class AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      // Escucha continuamente los cambios de autenticación.
+      // Escucha continuamente los cambios de autenticaciÃ³n.
       stream: authService.authStateChanges,
       builder: (context, snapshot) {
-        // Espera mientras Firebase comprueba si existe una sesión.
+        // Espera mientras Firebase comprueba si existe una sesiÃ³n.
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
@@ -29,7 +29,7 @@ class AuthGate extends StatelessWidget {
           return HomePage(authService: authService);
         }
 
-        // Si no existe una sesión, muestra el login.
+        // Si no existe una sesiÃ³n, muestra el login.
         return LoginPage(authService: authService);
       },
     );

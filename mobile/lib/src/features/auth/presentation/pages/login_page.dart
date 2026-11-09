@@ -5,7 +5,7 @@ import '../widgets/auth_error_message.dart';
 import 'register_page.dart';
 import 'reset_password_page.dart';
 
-/// Pantalla para iniciar sesión con correo y contraseña.
+/// Pantalla para iniciar sesiÃ³n con correo y contraseÃ±a.
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.authService});
 
@@ -32,9 +32,9 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  /// Intenta iniciar sesión mediante Firebase Authentication.
+  /// Intenta iniciar sesiÃ³n mediante Firebase Authentication.
   Future<void> _signIn() async {
-    // No continúa si algún campo del formulario es inválido.
+    // No continÃºa si algÃºn campo del formulario es invÃ¡lido.
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -44,14 +44,14 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // Envía las credenciales al servicio de Firebase.
+      // EnvÃ­a las credenciales al servicio de Firebase.
       await widget.authService.signIn(
         email: _emailController.text,
         password: _passwordController.text,
       );
 
       // No necesitamos navegar manualmente.
-      // AuthGate detectará automáticamente la sesión iniciada.
+      // AuthGate detectarÃ¡ automÃ¡ticamente la sesiÃ³n iniciada.
     } catch (error) {
       if (!mounted) {
         return;
@@ -79,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  /// Abre la pantalla de recuperación de contraseña.
+  /// Abre la pantalla de recuperaciÃ³n de contraseÃ±a.
   void _openResetPasswordPage() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -111,18 +111,18 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Iniciá sesión para reservar espacios deportivos.',
+                      'IniciÃ¡ sesiÃ³n para reservar espacios deportivos.',
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
 
-                    // Campo de correo electrónico.
+                    // Campo de correo electrÃ³nico.
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       autocorrect: false,
                       decoration: const InputDecoration(
-                        labelText: 'Correo electrónico',
+                        labelText: 'Correo electrÃ³nico',
                         prefixIcon: Icon(Icons.email_outlined),
                         border: OutlineInputBorder(),
                       ),
@@ -130,11 +130,11 @@ class _LoginPageState extends State<LoginPage> {
                         final email = value?.trim() ?? '';
 
                         if (email.isEmpty) {
-                          return 'Ingresá tu correo electrónico.';
+                          return 'IngresÃ¡ tu correo electrÃ³nico.';
                         }
 
                         if (!email.contains('@')) {
-                          return 'Ingresá un correo válido.';
+                          return 'IngresÃ¡ un correo vÃ¡lido.';
                         }
 
                         return null;
@@ -142,16 +142,16 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Campo de contraseña.
+                    // Campo de contraseÃ±a.
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
-                        labelText: 'Contraseña',
+                        labelText: 'ContraseÃ±a',
                         prefixIcon: const Icon(Icons.lock_outline),
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
-                          tooltip: 'Mostrar u ocultar contraseña',
+                          tooltip: 'Mostrar u ocultar contraseÃ±a',
                           onPressed: () {
                             setState(() {
                               _obscurePassword = !_obscurePassword;
@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Ingresá tu contraseña.';
+                          return 'IngresÃ¡ tu contraseÃ±a.';
                         }
 
                         return null;
@@ -177,12 +177,12 @@ class _LoginPageState extends State<LoginPage> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: _isLoading ? null : _openResetPasswordPage,
-                        child: const Text('¿Olvidaste tu contraseña?'),
+                        child: const Text('Â¿Olvidaste tu contraseÃ±a?'),
                       ),
                     ),
                     const SizedBox(height: 8),
 
-                    // Botón de inicio de sesión.
+                    // BotÃ³n de inicio de sesiÃ³n.
                     FilledButton(
                       onPressed: _isLoading ? null : _signIn,
                       child: Padding(
@@ -195,12 +195,12 @@ class _LoginPageState extends State<LoginPage> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text('Iniciar sesión'),
+                            : const Text('Iniciar sesiÃ³n'),
                       ),
                     ),
                     const SizedBox(height: 12),
 
-                    // Botón para crear una cuenta.
+                    // BotÃ³n para crear una cuenta.
                     OutlinedButton(
                       onPressed: _isLoading ? null : _openRegisterPage,
                       child: const Text('Crear una cuenta'),
