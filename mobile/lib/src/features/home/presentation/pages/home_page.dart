@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../../../core/errors/api_exception.dart';
 import '../../../../core/network/api_client.dart';
@@ -6,6 +6,8 @@ import '../../../../core/theme/theme_controller.dart';
 import '../../../auth/data/services/auth_service.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../venues/presentation/pages/venues_page.dart';
+import '../../../reservations/presentation/pages/my_reservations_page.dart';
+
 
 /// Pantalla principal del usuario autenticado.
 class HomePage extends StatefulWidget {
@@ -91,6 +93,17 @@ class _HomePageState extends State<HomePage> {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => VenuesPage(authService: widget.authService),
+      ),
+    );
+  }
+
+    /// Abre las reservas próximas y el historial.
+  void _openMyReservations() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MyReservationsPage(
+           authService: widget.authService,
+        ),
       ),
     );
   }
@@ -221,6 +234,18 @@ class _HomePageState extends State<HomePage> {
               label: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 14),
                 child: Text('VER SEDES DEPORTIVAS'),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            OutlinedButton.icon(
+              onPressed: _openMyReservations,
+              icon: const Icon(Icons.event_note),
+              label: const Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: 14,
+                ),
+                child: Text('MIS RESERVAS'),
               ),
             ),
             const SizedBox(height: 14),
