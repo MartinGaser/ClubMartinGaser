@@ -3,13 +3,13 @@ import '../../../../core/network/api_client.dart';
 import '../models/availability.dart';
 import '../models/reservation.dart';
 
-/// Repositorio que comunica Flutter con los endpoints de reservas.
+/// Comunica Flutter con los endpoints de reservas de FastAPI.
 class ReservationRepository {
   const ReservationRepository(this._apiClient);
 
   final ApiClient _apiClient;
 
-  /// Consulta los turnos disponibles para una fecha.
+  /// Consulta los turnos disponibles de un espacio para una fecha.
   Future<SpaceAvailability> getAvailability({
     required int sportsSpaceId,
     required DateTime requestedDate,
@@ -19,12 +19,16 @@ class ReservationRepository {
     final result = await _apiClient.get(
       '/api/spaces/$sportsSpaceId/availability',
       queryParameters: {'requested_date': formattedDate},
+
+      // La disponibilidad puede consultarse sin autenticación.
       authenticated: false,
     );
 
     if (result is! Map<String, dynamic>) {
       throw const ApiException(
-        message: 'El servidor devolvió una disponibilidad inválida.',
+        message:
+            ('El servidor devolvió '
+            'una disponibilidad inválida.'),
       );
     }
 
@@ -48,11 +52,57 @@ class ReservationRepository {
 
     if (result is! Map<String, dynamic>) {
       throw const ApiException(
-        message: 'El servidor devolvió una reserva inválida.',
+        message:
+            ('El servidor devolvió '
+            'una reserva inválida.'),
       );
     }
 
     return Reservation.fromJson(result);
+  }
+
+  /// Obtiene las reservas futuras y confirmadas.
+  Future<List<Reservation>> getFutureReservations() async {
+    final result = await _apiClient.get('/api/reservations/me');
+
+    return _parseReservationList(result);
+  }
+
+  /// Obtiene las reservas canceladas o finalizadas.
+  Future<List<Reservation>> getReservationHistory() async {
+    final result = await _apiClient.get('/api/reservations/me/history');
+
+    return _parseReservationList(result);
+  }
+
+  /// Cancela una reserva futura del usuario autenticado.
+  Future<Reservation> cancelReservation(int reservationId) async {
+    final result = await _apiClient.delete('/api/reservations/$reservationId');
+
+    if (result is! Map<String, dynamic>) {
+      throw const ApiException(
+        message:
+            ('El servidor devolvió '
+            'una reserva cancelada inválida.'),
+      );
+    }
+
+    return Reservation.fromJson(result);
+  }
+
+  /// Convierte una lista JSON en objetos Reservation.
+  List<Reservation> _parseReservationList(dynamic result) {
+    if (result is! List) {
+      throw const ApiException(
+        message:
+            ('El servidor devolvió '
+            'una lista de reservas inválida.'),
+      );
+    }
+
+    return result
+        .map((item) => Reservation.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   /// Convierte una fecha a YYYY-MM-DD.
