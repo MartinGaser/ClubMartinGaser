@@ -2,17 +2,23 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/errors/api_exception.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/theme/theme_controller.dart';
 import '../../../auth/data/services/auth_service.dart';
 import '../../../venues/presentation/pages/venues_page.dart';
 
-/// Pantalla principal provisional de ClubMartinGaser.
+/// Pantalla principal del usuario autenticado.
 ///
-/// Permite comprobar la conexiÃ³n autenticada con FastAPI
-/// y acceder al listado de sedes deportivas.
+/// Permite consultar el perfil almacenado en FastAPI,
+/// acceder a las sedes y cambiar el tema de la aplicación.
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.authService});
+  const HomePage({
+    super.key,
+    required this.authService,
+    required this.themeController,
+  });
 
   final AuthService authService;
+  final ThemeController themeController;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -23,19 +29,22 @@ class _HomePageState extends State<HomePage> {
 
   Map<String, dynamic>? _profile;
   String? _errorMessage;
-  bool _isLoading = false;
+
+  bool _isLoadingProfile = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Crea el cliente HTTP utilizando la sesiÃ³n actual de Firebase.
+    // Crea el cliente HTTP con la sesión de Firebase actual.
     _apiClient = ApiClient(authService: widget.authService);
+
+    // Carga los datos del usuario al entrar en Home.
+    _loadProfile();
   }
 
   @override
   void dispose() {
-    // Cierra el cliente HTTP cuando la pantalla deja de utilizarse.
     _apiClient.close();
     super.dispose();
   }
@@ -43,7 +52,7 @@ class _HomePageState extends State<HomePage> {
   /// Consulta el perfil autenticado desde FastAPI.
   Future<void> _loadProfile() async {
     setState(() {
-      _isLoading = true;
+      _isLoadingProfile = true;
       _errorMessage = null;
     });
 
@@ -76,7 +85,7 @@ class _HomePageState extends State<HomePage> {
     } finally {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _isLoadingProfile = false;
         });
       }
     }
@@ -91,9 +100,23 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Cierra la sesiÃ³n actual de Firebase.
+  /// Cierra la sesión de Firebase.
   Future<void> _signOut() async {
     await widget.authService.signOut();
+  }
+
+  String _initials({required String? firstName, required String? lastName}) {
+    final firstInitial = firstName == null || firstName.isEmpty
+        ? ''
+        : firstName.substring(0, 1).toUpperCase();
+
+    final lastInitial = lastName == null || lastName.isEmpty
+        ? ''
+        : lastName.substring(0, 1).toUpperCase();
+
+    final initials = '$firstInitial$lastInitial';
+
+    return initials.isEmpty ? 'U' : initials;
   }
 
   @override
@@ -103,102 +126,174 @@ class _HomePageState extends State<HomePage> {
     final email = _profile?['email'] as String? ?? firebaseUser?.email;
 
     final firstName = _profile?['first_name'] as String?;
-
     final lastName = _profile?['last_name'] as String?;
 
-    final fullName = [firstName, lastName].whereType<String>().join(' ');
+    final fullName = [
+      firstName,
+      lastName,
+    ].whereType<String>().where((value) => value.isNotEmpty).join(' ');
+
+    final initials = _initials(firstName: firstName, lastName: lastName);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('ClubMartinGaser'),
         actions: [
+          // Alterna entre modo claro y oscuro.
           IconButton(
-            tooltip: 'Cerrar sesiÃ³n',
+            tooltip: widget.themeController.isDarkMode
+                ? 'Usar modo claro'
+                : 'Usar modo oscuro',
+            onPressed: widget.themeController.toggleTheme,
+            icon: Icon(
+              widget.themeController.isDarkMode
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+            ),
+          ),
+
+          // Cierra la sesión actual.
+          IconButton(
+            tooltip: 'Cerrar sesión',
             onPressed: _signOut,
             icon: const Icon(Icons.logout),
           ),
         ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
+      body: RefreshIndicator(
+        onRefresh: _loadProfile,
+        child: ListView(
           padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 460),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 12),
+
+            // Encabezado del usuario.
+            Row(
               children: [
-                const Icon(Icons.sports_soccer, size: 72),
-                const SizedBox(height: 16),
-                const Text(
-                  'SesiÃ³n iniciada correctamente',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 8),
-
-                if (fullName.isNotEmpty)
-                  Text(
-                    fullName,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium,
+                Container(
+                  width: 68,
+                  height: 68,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: BorderRadius.circular(22),
                   ),
-
-                Text(
-                  email ?? 'Usuario sin correo',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 28),
-
-                // Abre las sedes obtenidas desde FastAPI.
-                FilledButton.icon(
-                  onPressed: _openVenues,
-                  icon: const Icon(Icons.location_city),
-                  label: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Ver sedes deportivas'),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Consulta el perfil autenticado en FastAPI.
-                OutlinedButton.icon(
-                  onPressed: _isLoading ? null : _loadProfile,
-                  icon: const Icon(Icons.person_outline),
-                  label: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Consultar mi perfil'),
-                  ),
-                ),
-
-                if (_errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    _errorMessage!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
+                  child: Text(
+                    initials,
+                    style: const TextStyle(
+                      color: Color(0xFF080A14),
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
-                ],
-
-                if (_profile != null) ...[
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Flutter, Firebase y FastAPI '
-                    'estÃ¡n conectados correctamente.',
-                    textAlign: TextAlign.center,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        fullName.isEmpty ? 'Usuario' : fullName,
+                        style: Theme.of(context).textTheme.titleLarge
+                            ?.copyWith(fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        email ?? 'Usuario sin correo',
+                        style: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(color: Colors.grey),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ],
             ),
-          ),
+            const SizedBox(height: 36),
+
+            Text(
+              'ZONA DEPORTIVA',
+              style: Theme.of(context).textTheme.headlineMedium
+                  ?.copyWith(fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Consultá sedes, espacios deportivos '
+              'y horarios disponibles.',
+            ),
+            const SizedBox(height: 28),
+
+            // Acceso principal a las sedes.
+            FilledButton.icon(
+              onPressed: _openVenues,
+              icon: const Icon(Icons.location_city),
+              label: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 14),
+                child: Text('VER SEDES DEPORTIVAS'),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Actualiza el perfil almacenado en FastAPI.
+            OutlinedButton.icon(
+              onPressed: _isLoadingProfile ? null : _loadProfile,
+              icon: const Icon(Icons.person_outline),
+              label: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: _isLoadingProfile
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('ACTUALIZAR MI PERFIL'),
+              ),
+            ),
+
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(_errorMessage!)),
+                  ],
+                ),
+              ),
+            ],
+
+            if (_profile != null) ...[
+              const SizedBox(height: 24),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.cloud_done_outlined,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Flutter, Firebase y FastAPI '
+                          'están conectados correctamente.',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

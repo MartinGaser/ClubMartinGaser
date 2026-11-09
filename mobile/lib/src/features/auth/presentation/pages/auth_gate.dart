@@ -1,35 +1,44 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/theme_controller.dart';
 import '../../../home/presentation/pages/home_page.dart';
 import '../../data/services/auth_service.dart';
 import 'login_page.dart';
 
-/// Decide quÃ© pantalla mostrar segÃºn la sesiÃ³n de Firebase.
+/// Decide qué pantalla mostrar según la sesión de Firebase.
 class AuthGate extends StatelessWidget {
-  const AuthGate({super.key, required this.authService});
+  const AuthGate({
+    super.key,
+    required this.authService,
+    required this.themeController,
+  });
 
   final AuthService authService;
+  final ThemeController themeController;
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      // Escucha continuamente los cambios de autenticaciÃ³n.
       stream: authService.authStateChanges,
       builder: (context, snapshot) {
-        // Espera mientras Firebase comprueba si existe una sesiÃ³n.
+        // Espera mientras Firebase comprueba
+        // si existe una sesión guardada.
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        // Si Firebase devuelve un usuario, muestra Home.
+        // Si hay un usuario autenticado, muestra Home.
         if (snapshot.hasData) {
-          return HomePage(authService: authService);
+          return HomePage(
+            authService: authService,
+            themeController: themeController,
+          );
         }
 
-        // Si no existe una sesiÃ³n, muestra el login.
+        // Si no hay sesión, muestra Login.
         return LoginPage(authService: authService);
       },
     );
