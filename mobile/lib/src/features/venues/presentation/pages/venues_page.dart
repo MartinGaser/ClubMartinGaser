@@ -150,11 +150,11 @@ class _VenuesPageState extends State<VenuesPage> {
       padding: const EdgeInsets.all(16),
       children: [
         Text(
-          'ElegÃƒÂ­ una sede',
+          'Eliga una sede',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 6),
-        const Text('ConsultÃƒÂ¡ los espacios y horarios disponibles.'),
+        const Text('Consulte los espacios y horarios disponibles.'),
         const SizedBox(height: 20),
         for (final venue in _venues)
           VenueCard(

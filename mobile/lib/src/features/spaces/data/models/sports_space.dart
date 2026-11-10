@@ -26,15 +26,15 @@ enum SportType {
     return name.toUpperCase();
   }
 
-  /// Nombre visible en la aplicaciÃ³n.
+  /// Nombre visible en la aplicacion.
   String get displayName {
     return switch (this) {
-      SportType.football => 'FÃºtbol',
+      SportType.football => 'Futbol',
       SportType.tennis => 'Tenis',
-      SportType.padel => 'PÃ¡del',
-      SportType.basketball => 'BÃ¡squet',
-      SportType.volleyball => 'VÃ³ley',
-      SportType.swimming => 'NataciÃ³n',
+      SportType.padel => 'Padel',
+      SportType.basketball => 'Basquet',
+      SportType.volleyball => 'Voley',
+      SportType.swimming => 'Natacion',
       SportType.other => 'Otro',
     };
   }

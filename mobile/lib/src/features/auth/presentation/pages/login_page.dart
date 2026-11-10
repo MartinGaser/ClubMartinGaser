@@ -111,7 +111,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'IniciÃ¡ sesiÃ³n para reservar espacios deportivos.',
+                      'Inicia sesion para reservar espacios deportivos.',
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
@@ -122,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                       keyboardType: TextInputType.emailAddress,
                       autocorrect: false,
                       decoration: const InputDecoration(
-                        labelText: 'Correo electrÃ³nico',
+                        labelText: 'Correo electronico',
                         prefixIcon: Icon(Icons.email_outlined),
                         border: OutlineInputBorder(),
                       ),
@@ -130,11 +130,11 @@ class _LoginPageState extends State<LoginPage> {
                         final email = value?.trim() ?? '';
 
                         if (email.isEmpty) {
-                          return 'IngresÃ¡ tu correo electrÃ³nico.';
+                          return 'Ingresa tu correo electronico.';
                         }
 
                         if (!email.contains('@')) {
-                          return 'IngresÃ¡ un correo vÃ¡lido.';
+                          return 'Ingresa un correo valido.';
                         }
 
                         return null;
@@ -147,11 +147,11 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
-                        labelText: 'ContraseÃ±a',
+                        labelText: 'Contrasena',
                         prefixIcon: const Icon(Icons.lock_outline),
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
-                          tooltip: 'Mostrar u ocultar contraseÃ±a',
+                          tooltip: 'Mostrar u ocultar contrasena',
                           onPressed: () {
                             setState(() {
                               _obscurePassword = !_obscurePassword;
@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'IngresÃ¡ tu contraseÃ±a.';
+                          return 'Ingresa tu contrasena.';
                         }
 
                         return null;
@@ -177,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: _isLoading ? null : _openResetPasswordPage,
-                        child: const Text('Â¿Olvidaste tu contraseÃ±a?'),
+                        child: const Text('Olvidaste tu contrasena?'),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -195,7 +195,7 @@ class _LoginPageState extends State<LoginPage> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text('Iniciar sesiÃ³n'),
+                            : const Text('Iniciar sesion'),
                       ),
                     ),
                     const SizedBox(height: 12),
