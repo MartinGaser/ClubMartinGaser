@@ -7,6 +7,9 @@ durante un intervalo determinado.
 
 from datetime import datetime
 from typing import TYPE_CHECKING
+from sqlalchemy import DateTime
+from sqlalchemy.orm import Mapped, mapped_column
+
 
 from sqlalchemy import (
     CheckConstraint,
@@ -97,6 +100,23 @@ class Reservation(Base):
 
     # Solo tendrá valor cuando la reserva sea cancelada.
     cancelled_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    reminder_24h_sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    # Momento en que se envió el recordatorio de 1 hora.
+    reminder_1h_sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    # Fecha en la que se envió el recordatorio de 1 hora.
+    reminder_1h_sent_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
     )

@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+
+import '../../../notifications/data/services/notification_service.dart';
 
 import '../../../../core/errors/api_exception.dart';
 import '../../../../core/network/api_client.dart';
@@ -7,7 +9,6 @@ import '../../../auth/data/services/auth_service.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../venues/presentation/pages/venues_page.dart';
 import '../../../reservations/presentation/pages/my_reservations_page.dart';
-
 
 /// Pantalla principal del usuario autenticado.
 class HomePage extends StatefulWidget {
@@ -26,6 +27,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final ApiClient _apiClient;
+  late final NotificationService _notificationService;
 
   Map<String, dynamic>? _profile;
   String? _errorMessage;
@@ -37,13 +39,26 @@ class _HomePageState extends State<HomePage> {
 
     _apiClient = ApiClient(authService: widget.authService);
 
+    _notificationService = NotificationService(_apiClient);
+
+    _initializeNotifications();
     _loadProfile();
   }
 
   @override
   void dispose() {
+    _notificationService.dispose();
     _apiClient.close();
     super.dispose();
+  }
+
+  Future<void> _initializeNotifications() async {
+    try {
+      await _notificationService.initialize();
+    } catch (error) {
+      // La aplicación continúa funcionando aunque falle FCM.
+      debugPrint('No se pudo registrar el dispositivo: $error');
+    }
   }
 
   /// Consulta el perfil autenticado desde FastAPI.
@@ -97,13 +112,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-    /// Abre las reservas próximas y el historial.
+  /// Abre las reservas próximas y el historial.
   void _openMyReservations() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => MyReservationsPage(
-           authService: widget.authService,
-        ),
+        builder: (_) => MyReservationsPage(authService: widget.authService),
       ),
     );
   }
@@ -242,9 +255,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: _openMyReservations,
               icon: const Icon(Icons.event_note),
               label: const Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: 14,
-                ),
+                padding: EdgeInsets.symmetric(vertical: 14),
                 child: Text('MIS RESERVAS'),
               ),
             ),
